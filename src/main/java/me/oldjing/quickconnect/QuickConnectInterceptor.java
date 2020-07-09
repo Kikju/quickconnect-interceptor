@@ -7,15 +7,22 @@ import me.oldjing.quickconnect.store.RelayHandler;
 import me.oldjing.quickconnect.store.RelayManager;
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 public class QuickConnectInterceptor implements Interceptor {
 
 	public static final String ID_DSM_PORTAL = "dsm_portal";
-	public static final String ID_DSM_PORTAL_HTTPS = "dsm_portal_https";
+	public static final String ID_DSM_HTTPS = "dsm_https";
 
 	private RelayManager relayManager;
+	private OkHttpClient defaultClient;
+
+	public QuickConnectInterceptor(OkHttpClient defaultClient) {
+		this();
+		this.defaultClient = defaultClient;
+	}
 
 	public QuickConnectInterceptor() {
 		relayManager = new RelayManager();
@@ -31,7 +38,7 @@ public class QuickConnectInterceptor implements Interceptor {
 		String host = requestUrl.host();
 		if (Util.isQuickConnectId(host)) {
 			final String serverID = host;
-			final String id = isHttps ? ID_DSM_PORTAL_HTTPS : ID_DSM_PORTAL;
+			final String id = isHttps ? ID_DSM_HTTPS : ID_DSM_PORTAL;
 
 			int port = requestUrl.port();
 			RelayCookie cookie = relayManager.get(serverID, port);
@@ -44,7 +51,7 @@ public class QuickConnectInterceptor implements Interceptor {
 			}
 			if (cookie.resolvedUrl() == null) {
 				// not resolved yet!
-				QuickConnectResolver resolver = new QuickConnectResolver(requestUrl);
+				QuickConnectResolver resolver = new QuickConnectResolver(requestUrl, defaultClient);
 				cookie = resolver.resolve(serverID, port, id);
 
 				// update cache

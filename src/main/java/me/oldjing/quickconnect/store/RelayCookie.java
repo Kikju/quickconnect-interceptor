@@ -35,7 +35,7 @@ public class RelayCookie {
 
 	public static class Builder {
 		private String serverID;
-		private String id; // dsm_portal or dsm_portal_https
+		private String id; // dsm_portal or dsm_https
 		private HttpUrl resolvedUrl;
 
 		public Builder serverID(String serverID) {

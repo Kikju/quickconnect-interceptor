@@ -55,7 +55,15 @@ public class QuickConnectResolver {
 	private List<HttpUrl> checkedServers = new ArrayList<>();
 
 	public QuickConnectResolver(HttpUrl requestUrl) {
-		OkHttpClient.Builder builder = new OkHttpClient.Builder();
+		this(requestUrl, null);
+	}
+
+	public QuickConnectResolver(HttpUrl requestUrl, OkHttpClient defaultClient) {
+		OkHttpClient.Builder builder;
+		if (defaultClient == null)
+			builder = new OkHttpClient.Builder();
+		else
+			builder = defaultClient.newBuilder();
 
 		try {
 			SSLContext context = SSLContext.getInstance("TLS");
@@ -275,7 +283,9 @@ public class QuickConnectResolver {
 				if (future != null) {
 					String host = future.get();
 					if (!Util.isEmpty(host)) {
-						return requestUrl.newBuilder().host(host).port(port).build();
+						final HttpUrl resolved = requestUrl.newBuilder().host(host).port(port).build();
+//						System.out.println("Internal service resolved: " + resolved);
+						return resolved;
 					}
 				}
 			} catch (InterruptedException | ExecutionException ignored) {
@@ -288,7 +298,9 @@ public class QuickConnectResolver {
 				if (future != null) {
 					String host = future.get();
 					if (!Util.isEmpty(host)) {
-						return requestUrl.newBuilder().host(host).port(port).build();
+						final HttpUrl resolved = requestUrl.newBuilder().host(host).port(port).build();
+//						System.out.println("Host service resolved: " + resolved);
+						return resolved;
 					}
 				}
 			} catch (InterruptedException | ExecutionException ignored) {
@@ -301,7 +313,10 @@ public class QuickConnectResolver {
 				if (future != null) {
 					String host = future.get();
 					if (!Util.isEmpty(host)) {
-						return requestUrl.newBuilder().host(host).port(port).build();
+						int portOrExternalPort = (externalPort > 0) ? externalPort : port;
+						final HttpUrl resolved = requestUrl.newBuilder().host(host).port(portOrExternalPort).build();
+//						System.out.println("External service resolved: " + resolved);
+						return resolved;
 					}
 				}
 			} catch (InterruptedException | ExecutionException ignored) {
